@@ -29,6 +29,7 @@ var CHECKSFILE_DEFAULT = "checks.json";
 var URL_DEFAULT = null;
 var rest = require("restler");
 var syst = require("util");
+var request = require("request");
 
 var assertFileExists = function(infile) {
     var instr = infile.toString();
@@ -58,6 +59,7 @@ var checkHtmlFile = function(htmlfile, checksfile) {
     return out;
 };
 
+
 var clone = function(fn) {
     // Workaround for commander.js issue.
     // http://stackoverflow.com/a/6772648
@@ -71,7 +73,18 @@ if(require.main == module) {
         .option('-u, --url <url>', 'URL path to file', URL_DEFAULT)
         .parse(process.argv);
     if (program.url) {
-       var $ = cheerioURL(program.url);
+	request(program.url, function(error, response, body) {
+	// Hand the HTML response off to Cheerio and assign that to
+	//  a local $ variable to provide familiar jQuery syntax.
+		var $ = cheerio.load(body);
+ 
+		// Exactly the same code that we used in the browser before:
+//		$('h2').each(function() {
+//		console.log($(this).text());
+//		});
+        program.file = body;
+	});
+  
     }
     else {
        var $ = cheerioHtmlFile(program.file);
